@@ -1,45 +1,21 @@
 FROM alpine:latest
 
-# Instalación de dependencias y PHP 8.2 (versión estable recomendada)
+# Instalamos herramientas base
 RUN apk update && apk add --no-cache \
-    curl \
-    ca-certificates \
-    nginx \
-    git \
-    unzip \
-    tar \
-    xz \
-    php82 \
-    php82-fpm \
-    php82-curl \
-    php82-dom \
-    php82-gd \
-    php82-json \
-    php82-mbstring \
-    php82-mysqli \
-    php82-openssl \
-    php82-pdo \
-    php82-pdo_mysql \
-    php82-pdo_sqlite \
-    php82-phar \
-    php82-simplexml \
-    php82-xml \
-    php82-xmlreader \
-    php82-zip \
-    php82-tokenizer \
-    php82-ctype \
-    php82-fileinfo \
-    php82-session \
-    php82-bcmath
+    curl ca-certificates nginx git unzip tar xz bash
 
-# Instalar Composer desde la imagen oficial
+# Instalamos PHP 8.1, 8.2 y 8.3 con sus módulos comunes
+# Usamos el repositorio edge/community para asegurar disponibilidad
+RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.15/community php81 php81-fpm php81-mysqli php81-curl php81-mbstring php81-xml php81-zip
+RUN apk add --no-cache --repository=http://dl-cdn.alpinelinux.org/alpine/v3.19/community php82 php82-fpm php82-mysqli php82-curl php82-mbstring php82-xml php82-zip
+RUN apk add --no-cache php83 php83-fpm php83-mysqli php83-curl php83-mbstring php83-xml php83-zip
+
+# Composer global
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Crear usuario y preparar entorno
 RUN adduser -D -h /home/container container
 USER container
 ENV USER=container HOME=/home/container
 WORKDIR /home/container
 
-# El entrypoint lo manejará el Egg mediante el script de inicio
-CMD ["/bin/ash"]
+CMD ["/bin/bash"]
